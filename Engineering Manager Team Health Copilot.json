@@ -1,0 +1,598 @@
+{
+  "name": "Engineering Manager Team Health Copilot",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $('EM Copilot Configuration').item.json.githubPrUrl }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "state",
+              "value": "open"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3c18fa46-5400-4fc6-9e50-02f1d98a673a",
+      "name": "Fetch GitHub PR Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        704,
+        752
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "githubApi": {
+          "id": "A3l3PkdUJyof6eDe",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('EM Copilot Configuration').item.json.issueTrackerUrl }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "state",
+              "value": "open"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a822febb-e60e-4efd-8035-03445d352ba4",
+      "name": "Fetch Issue Tracker Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        704,
+        944
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "githubApi": {
+          "id": "A3l3PkdUJyof6eDe",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "c8c144ce-c268-4132-aab3-a83c7013c5f4",
+      "name": "Merge PR and Issue Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        928,
+        848
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n  \"teamName\": \"{{$json[\"teamName\"]}}\",\n  \"stats\": {{$json[\"stats\"]}},\n  \"risks\": {{$json[\"risks\"]}}\n}",
+        "options": {
+          "systemMessage": "You are a Team Health Analyzer for an engineering manager.\nYou receive structured stats and a list of risks about GitHub issues and pull requests.\n\nYour job:\n- Summarize the current delivery and risk situation.\n- Propose concrete, actionable next steps for the engineering manager.\n\nYou MUST respond in valid JSON only, with this exact shape:\n\n{\n  \"summary\": \"<1–2 sentence high-level summary>\",\n  \"shipped\": [\"<optional bullet>\", \"...\"],\n  \"inProgress\": [\"<optional bullet>\", \"...\"],\n  \"blocked\": [\"<optional bullet>\", \"...\"],\n  \"topRisks\": [\"<risk 1>\", \"<risk 2>\", \"...\"],\n  \"actions\": [\"<action 1>\", \"<action 2>\", \"...\"]\n}\n\nDo not invent work; base your text only on the stats and risks you receive."
+        }
+      },
+      "id": "fe4841cc-beda-4746-9ac2-cf785d10f76a",
+      "name": "Team Health Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1440,
+        848
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "id"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "24bfffb3-0be2-4bd8-8b1c-990d37448d9a",
+      "name": "GPT-4 Model (Health Analyzer)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1376,
+        1072
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "daSE3MHNea4Q5jgZ",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ \n  (\n    $items(\"Aggregate Metrics & Flag Risks\", 0, 0).json.risks || []\n  ).length \n}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ebc8cc54-1ac8-4b96-8939-2efb11e50dcf",
+      "name": "Check Health Thresholds",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1840,
+        848
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "2cce4906-f903-473c-9576-429c7656f676",
+      "name": "GPT-4 Model (Interactive)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        560
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "FpG4vVyompVOSbsB",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "4667dbab-aff7-444d-abb6-cdfbf77d9bd4",
+      "name": "Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "5b502e4c-1ac8-4a22-96ca-98649b8782c8",
+      "name": "Daily EM Briefing Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "issueTrackerUrl",
+              "value": "https://api.github.com/repos/quantum-geek/EM-CoPilot/issues",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "githubPrUrl",
+              "value": "https://api.github.com/repos/quantum-geek/EM-CoPilot/pulls",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "slackChannel",
+              "value": "#em-copilot",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "teamName",
+              "value": "Team Alpha",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "staleIssueDays",
+              "value": 7,
+              "type": "number"
+            },
+            {
+              "id": "id-6",
+              "name": "stalePrDays",
+              "value": 0,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a0493014-ba63-44ed-a367-54ef3febf608",
+      "name": "EM Copilot Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        848
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ---------- 1) Read configuration from \"EM Copilot Configuration\" ----------\nconst cfgItems = $items(\"EM Copilot Configuration\", 0) || [];\nconst cfg = (cfgItems[0] && cfgItems[0].json) || {};\n\n// stalePrDays semantics:\n// - undefined/null/'' => default 7\n// - > 0               => days threshold\n// - 0 or negative     => DEMO mode: treat ALL open PRs as stale\nconst rawStale = cfg.stalePrDays;\nlet stalePrDays;\n\nif (rawStale === undefined || rawStale === null || rawStale === \"\") {\n  stalePrDays = 7;\n} else {\n  stalePrDays = Number(rawStale);\n}\n\n// ---------- 2) Prepare stats & risks ----------\nconst stats = {\n  totalPRs: 0,\n  openPRs: 0,\n};\nconst risks = [];\n\nconst now = new Date();\nconst msPerDay = 1000 * 60 * 60 * 24;\n\n// ---------- 3) Pull PRs directly from \"Fetch GitHub PR Data\" ----------\nconst prItems = $items(\"Fetch GitHub PR Data\", 0) || [];\nconst allPRs = [];\n\nfor (const item of prItems) {\n  const j = item.json;\n\n  if (Array.isArray(j)) {\n    // Some integrations return an array in json\n    allPRs.push(...j);\n  } else if (j && typeof j === \"object\") {\n    // Others return one PR per item\n    allPRs.push(j);\n  }\n}\n\n// ---------- 4) Compute basic stats ----------\nstats.totalPRs = allPRs.length;\n\nconst openPRs = allPRs.filter((pr) => pr.state === \"open\");\nstats.openPRs = openPRs.length;\n\n// ---------- 5) Identify stale PRs ----------\nlet stalePRs = [];\n\nif (!Number.isNaN(stalePrDays)) {\n  if (stalePrDays > 0) {\n    // Normal mode: real \"older than N days\"\n    stalePRs = openPRs.filter((pr) => {\n      const updatedAt = new Date(pr.updated_at || pr.created_at || now);\n      const ageDays = (now - updatedAt) / msPerDay;\n      return ageDays >= stalePrDays;\n    });\n  } else {\n    // DEMO mode: stalePrDays <= 0 → treat ALL open PRs as stale\n    stalePRs = openPRs;\n  }\n}\n\nif (stalePRs.length > 0) {\n  const owners = Array.from(\n    new Set(\n      stalePRs\n        .map((pr) => pr.user && pr.user.login)\n        .filter(Boolean),\n    ),\n  );\n\n  risks.push({\n    type: \"Stale PRs\",\n    detail: `${stalePRs.length} PR(s) older than ${stalePrDays} day(s)`,\n    owners,\n  });\n\n  stats.stalePRs = stalePRs.length;\n}\n\n// ---------- 6) Return one aggregated item ----------\nreturn [\n  {\n    json: {\n      stats,\n      risks,\n      stalePrDaysUsed: stalePrDays,\n      debug: {\n        cfg,\n        prItemsCount: prItems.length,\n        allPRsCount: allPRs.length,\n      },\n    },\n  },\n];"
+      },
+      "id": "7f658635-1c9d-4045-b2ab-21963478fa55",
+      "name": "Aggregate Metrics & Flag Risks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#em-copilot",
+          "mode": "name"
+        },
+        "text": "={{ $json.text || \"*Daily Team Health – no summary generated.*\" }}",
+        "otherOptions": {}
+      },
+      "id": "e35dab75-bacc-4d13-a161-5db590cafd3f",
+      "name": "Send Briefing to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2064,
+        944
+      ],
+      "webhookId": "607dc155-c02c-4dac-919c-bc76e3d34690",
+      "alwaysOutputData": true,
+      "credentials": {
+        "slackApi": {
+          "id": "J4uyJm8c3ha2y1sq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- FORMAT DAILY BRIEFING (using Aggregate node data) ---\n\n// 0) Pull EM Copilot configuration (team name, Slack channel, thresholds)\nconst configItems = $items(\"EM Copilot Configuration\");\nconst config = configItems.length ? configItems[0].json : {};\n\n// 1) Pull data from Aggregate Metrics & Flag Risks node\nconst aggItems = $items(\"Aggregate Metrics & Flag Risks\");\nconst agg = aggItems.length ? aggItems[0].json : {};\n\n// 2) Team / channel info\nconst teamName = config.teamName || \"Team Alpha\";\nconst slackChannel = config.slackChannel || \"#em-copilot\";\n\n// 3) Stats & risks\nconst stats = agg.stats || {};\nconst risks = Array.isArray(agg.risks) ? agg.risks : [];\n\n// 4) Build a simple summary\nconst summary =\n  risks.length > 0\n    ? `There are ${risks.length} active risk(s) on your board.`\n    : \"No overall summary available.\";\n\n// 5) Format risks as bullets for Slack\nfunction formatRisks(arr) {\n  if (!arr || !arr.length) return \"_None._\";\n\n  return arr\n    .map((r) => {\n      const owners = Array.isArray(r.owners)\n        ? r.owners.join(\", \")\n        : r.owners || \"n/a\";\n      return `• *${r.type}* – ${r.detail}` +\n        (owners ? ` (owners: ${owners})` : \"\");\n    })\n    .join(\"\\n\");\n}\n\n// 6) Final Slack text\nconst text =\n  `*Daily Team Health – ${teamName}*\\n\\n` +\n  `${summary}\\n\\n` +\n  `*Top Risks:*\\n${formatRisks(risks)}\\n\\n` +\n  `*Recommended Actions:* _None_\\n\\n` +\n  `Automated with this n8n workflow`;\n\n// 7) Return one item for downstream nodes\nreturn {\n  json: {\n    teamName,\n    slackChannel,\n    text,\n    stats,\n    summary,\n    topRisks: risks,\n    actions: [],\n  },\n};"
+      },
+      "id": "c4fd7a41-1805-4126-b7ca-a8d452077311",
+      "name": "Format Daily Briefing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        752
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "team-health-assistant",
+        "options": {}
+      },
+      "id": "a12e8ee7-4091-432a-9c42-1f4ded351fad",
+      "name": "EM Chat Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        416
+      ],
+      "webhookId": "a7186b4d-d1d4-4674-80ed-d348a2176fd7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "You are an interactive assistant for Engineering Managers. Help them query GitHub issues and PRs, analyze team health data, and provide insights. Use the GitHub Tool to fetch live data when needed and the Slack Tool to send responses."
+        }
+      },
+      "id": "e0c21daa-53e0-448b-90ac-531fc3c5fe79",
+      "name": "EM Chat Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        608,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Query GitHub API for issues or pull requests. Use this tool when you need live data about issues or PRs.",
+        "url": "={{ $fromAI('github_url', 'The GitHub API URL to query (issues or PRs endpoint)', 'string') }}",
+        "options": {}
+      },
+      "id": "97d3a05d-a924-4dd7-92d9-ca78a462c9fa",
+      "name": "GitHub Query Tool",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        736,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Send a message to a Slack channel. Use this to reply to the user.",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $fromAI('channel', 'The Slack channel ID to send the message to', 'string') }}"
+        },
+        "text": "={{ $fromAI('message', 'The message text to send', 'string') }}",
+        "otherOptions": {}
+      },
+      "id": "0e631fe1-ac9e-4682-8449-8162dc6a051d",
+      "name": "Slack Messaging Tool",
+      "type": "n8n-nodes-base.slackTool",
+      "typeVersion": 2.4,
+      "position": [
+        896,
+        528
+      ],
+      "webhookId": "9ab5548b-b4b2-4f82-aacd-19339443c15e",
+      "credentials": {
+        "slackApi": {
+          "id": "J4uyJm8c3ha2y1sq",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Issue Tracker Data": {
+      "main": [
+        [
+          {
+            "node": "Merge PR and Issue Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch GitHub PR Data": {
+      "main": [
+        [
+          {
+            "node": "Merge PR and Issue Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge PR and Issue Data": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Metrics & Flag Risks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4 Model (Health Analyzer)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Team Health Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team Health Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Check Health Thresholds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Health Thresholds": {
+      "main": [
+        [
+          {
+            "node": "Format Daily Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "GPT-4 Model (Interactive)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "EM Chat Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "EM Chat Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily EM Briefing Trigger": {
+      "main": [
+        [
+          {
+            "node": "EM Copilot Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EM Copilot Configuration": {
+      "main": [
+        [
+          {
+            "node": "Fetch GitHub PR Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Issue Tracker Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Metrics & Flag Risks": {
+      "main": [
+        [
+          {
+            "node": "Team Health Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EM Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "EM Chat Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Query Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "EM Chat Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Messaging Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "EM Chat Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Daily Briefing": {
+      "main": [
+        [
+          {
+            "node": "Send Briefing to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "39a26768-da8a-4fa8-90ac-2dc57173c6a2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cf8ef00aeb3292e1510f67f57bea5e6518aef32de28b652bcca93a68b2a72b34"
+  },
+  "id": "84IzbqMUJqeamVVB",
+  "tags": []
+}
