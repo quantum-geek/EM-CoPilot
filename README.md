@@ -1,61 +1,142 @@
-# EM-CoPilot
-EM Co Pilot Project on N8N
+# Engineering Manager Copilot - Daily Team Health Briefing
 
-## Engineering Manager Team Health Copilot
+Engineering Manager Copilot is an n8n based workflow that turns GitHub pull request activity and Jira work item data into a daily Slack briefing for engineering leaders.
 
-**What it does**
+The workflow is designed to answer a simple question every morning:
 
-A daily Slack briefing for engineering managers that surfaces risks from GitHub pull requests.
+**What needs my attention on the team today?**
 
-- Fetches open PRs from GitHub
-- Computes basic health metrics:
-  - Total PRs
-  - Open PRs
-  - Stale PRs (older than _N_ days, configurable)
-- Flags risks (e.g. “Stale PRs – 2 PRs older than 4 days (owners: quantum-geek)”)
-- Sends a formatted summary to a Slack channel (`#em-copilot`) every day
+It does this by collecting delivery signals, identifying stale work, generating AI assisted risk commentary, and posting a concise Slack summary with recommended actions.
 
-**Tech stack**
+## What it does
 
-- [n8n](https://n8n.io/) – workflow engine
-- GitHub API – source of PR data
-- Slack bot – destination for the daily briefing
-- GPT-4 (optional) – can be used to generate richer natural-language summaries
+- Pulls Jira issue and bug data for the team
+- Pulls GitHub pull request data from the target repository
+- Detects stale PRs based on configurable thresholds
+- Aggregates board level risk metrics such as:
+  - unassigned issues
+  - open bugs
+  - stale PRs
+- Uses AI to summarize team health and recommend actions
+- Sends a polished daily Slack briefing to a configured channel
 
-**Workflow file**
+## Why this project matters
 
-- `workflows/em-team-health-copilot.json`
+Engineering leaders rarely have one place that combines execution signals, code review backlog, and team level operational risk into a lightweight daily summary.
 
-**How it works (high level)**
+This workflow closes that gap by creating a repeatable manager copilot experience that is:
 
-1. **Daily EM Briefing Trigger**  
-   Scheduled trigger that runs once per day.
+- automated
+- configurable
+- explainable
+- easy to extend
 
-2. **EM Copilot Configuration**  
-   Static config (team name, Slack channel, GitHub URLs, thresholds like `stalePrDays`).
+## Workflow overview
 
-3. **Fetch GitHub PR Data**  
-   n8n HTTP/GitHub node that calls the repo’s `/pulls` API and returns all open PRs.
+The workflow has four major stages:
 
-4. **Aggregate Metrics & Flag Risks (Code node)**  
-   - Counts `totalPRs`, `openPRs`  
-   - Calculates `stalePrDays` from configuration  
-   - Builds a `risks[]` array such as:  
-     `[{ type: "Stale PRs", detail: "2 PR(s) older than 4 day(s)", owners: ["quantum-geek"] }]`
+1. **Data collection**  
+   Pull Jira and GitHub data and normalize it into a clean intermediate shape.
 
-5. **Format Daily Briefing (Code node)**  
-   Transforms stats and risks into a Slack-friendly message body.
+2. **Signal detection**  
+   Detect stale PRs and build a structured team snapshot.
 
-6. **Send Briefing to Slack**  
-   Posts the formatted message into `#em-copilot` using a Slack bot token.
+3. **AI analysis**  
+   Generate PR specific and team health specific commentary.
 
-**Example Slack output**
+4. **Delivery**  
+   Format a Slack friendly daily briefing and send it to the target channel.
 
-> Daily Team Health – Team Alpha  
-> There are 1 active risk(s) on your board.  
->  
-> **Top Risks:**  
-> • Stale PRs – 2 PR(s) older than 4 day(s) (owners: quantum-geek)  
->  
-> **Recommended Actions:** None  
-> _Automated with this n8n workflow_
+## Current output
+
+The latest version of the workflow produces a Slack briefing with:
+
+- PR Aging Alerts
+- AI Risk Insights
+- Health Status
+- Top Risks
+- Recommended Actions
+
+## Example use cases
+
+- Daily engineering manager standup prep
+- Staff meeting prep for delivery health review
+- Early warning for review bottlenecks and ownership gaps
+- Lightweight operational dashboard via Slack instead of a full custom app
+
+## Architecture notes
+
+### Inputs
+- Jira issues and bugs
+- GitHub pull requests
+- n8n configuration values such as stale PR thresholds and Slack channel
+
+### Processing
+- Normalize Jira payloads
+- Select GitHub PR fields
+- Merge source data into a team snapshot
+- Detect stale PRs
+- Aggregate metrics and flag risks
+- Run AI powered analysis for PR risk and team health
+
+### Outputs
+- Daily Slack message
+- Action oriented summary for engineering leadership
+
+## Configuration
+
+The workflow currently supports configurable values such as:
+
+- `teamName`
+- `slackChannel`
+- `stalePrDays`
+- `staleIssueDays`
+
+## Future enhancements
+
+- Slash command support via `/emcopilot`
+- Trend tracking over multiple days
+- Repository level filtering for multiple teams
+- More structured action recommendation categories
+- Historical storage in a database or Google Sheet
+- Rich Slack blocks for cleaner formatting
+
+## Tech stack
+
+- n8n
+- GitHub integration
+- Jira integration
+- OpenAI chat model nodes
+- Slack integration
+- Javascript
+
+## Repo structure
+
+```text
+.
+├── README.md
+├── docs/
+│   ├── workflow-node-guide.pdf
+│   └── demo-script.md
+├── screenshots/
+└── workflow/
+```
+
+## How to run
+
+1. Import the workflow into n8n.
+2. Configure GitHub, Jira, Slack, and OpenAI credentials.
+3. Set team configuration values.
+4. Test each node from left to right.
+5. Enable the trigger once the end to end Slack output looks correct.
+
+## What makes this strong
+
+This project demonstrates:
+
+- workflow orchestration
+- AI assisted operational analysis
+- signal extraction from engineering systems
+- executive friendly communication in Slack
+- practical product thinking instead of a toy demo
+
