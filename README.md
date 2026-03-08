@@ -95,6 +95,11 @@ Daily Trigger
 **Webhook Flow**
 <img width="1348" height="692" alt="image" src="https://github.com/user-attachments/assets/b43233d9-9938-4f29-a014-d0fd51c49e7c" />
 
+**/emcopilot summary**
+
+<img width="464" height="213" alt="image" src="https://github.com/user-attachments/assets/00685c8a-69b8-4e35-972f-7e65e49b782b" />
+
+
 **/emcopilot risks**
 
 <img width="891" height="307" alt="image" src="https://github.com/user-attachments/assets/b5072e71-e634-4a09-939d-d054b0879856" />
