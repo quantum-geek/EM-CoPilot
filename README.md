@@ -92,25 +92,31 @@ Daily Trigger
 - team-specific filters
 - persistence and historical reporting
 
-Webhook Flow
+**Webhook Flow**
 <img width="1348" height="692" alt="image" src="https://github.com/user-attachments/assets/b43233d9-9938-4f29-a014-d0fd51c49e7c" />
 
-/emcopilot risks
+**/emcopilot risks**
+
 <img width="891" height="307" alt="image" src="https://github.com/user-attachments/assets/b5072e71-e634-4a09-939d-d054b0879856" />
 
-/emcopilot issues
+**/emcopilot issues**
+
 <img width="853" height="411" alt="image" src="https://github.com/user-attachments/assets/6907a47c-9a7b-46f4-ba44-797361de5f69" />
 
-/emcoppilot prs
+**/emcoppilot prs**
+
 <img width="702" height="257" alt="image" src="https://github.com/user-attachments/assets/b2623067-d677-473a-a168-7aec75ef6c47" />
 
-/emcopilot help
+**/emcopilot help**
+
 <img width="946" height="448" alt="image" src="https://github.com/user-attachments/assets/5062b7e3-4e7a-456f-a725-bed4ee175d90" />
 
 
-Daily EM Briefing Trigger
+**Daily EM Briefing Trigger**
+
 <img width="1877" height="427" alt="image" src="https://github.com/user-attachments/assets/c365443a-d85e-48c8-b648-994addea8882" />
 
-Daily EM Briefing Trigger Output
+**Daily EM Briefing Trigger Output**
+
 <img width="868" height="523" alt="image" src="https://github.com/user-attachments/assets/8ef9c9a1-fbfc-4376-80c3-5bd8eeaf971b" />
 
