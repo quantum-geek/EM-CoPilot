@@ -91,3 +91,6 @@ Daily Trigger
 - richer risk scoring
 - team-specific filters
 - persistence and historical reporting
+
+Webhook Flow
+<img width="1348" height="692" alt="image" src="https://github.com/user-attachments/assets/b43233d9-9938-4f29-a014-d0fd51c49e7c" />
