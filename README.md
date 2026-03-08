@@ -1,6 +1,6 @@
 # Engineering Manager Copilot
 
-**[Demo Link]**
+**Demo: **https://drive.google.com/file/d/1PiOsNPOnBR_NkzrCfhXPw3xPKCs2OCJB/view?usp=drive_link
 
 ## Overview
 Engineering Manager Copilot is an n8n-based Slack command and daily briefing system that helps engineering managers quickly understand team execution health across GitHub and Jira.
